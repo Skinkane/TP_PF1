@@ -9,35 +9,37 @@ app.get('/', async (req, res) => {
 
 
 const getCatFacts = () =>{
-  let facts = [];
-  return new Promise(resolve => {axios.get('https://cat-fact.herokuapp.com/facts').then(res => {
+  return new Promise(resolve => {axios.get('https://cat-fact.herokuapp.com/facts/random?animal_type=cat&amount=3').then(res => {
     let facts = [];
     let i = 0;
-    while (i < 3) {
+    while (i < res.data.length) {
       facts.push(res.data[i].text);
       i++;
-    };
+    }
     resolve(facts);
-  });});
+  }).catch(fail => resolve(null));});
 };
 
 const getFoxDay = () =>{
   return new Promise(resolve => {
-    axios.get('https://randomfox.ca/floof/').then(res => {resolve(res.data.image)});
+    axios.get('https://randomfox.ca/floof/').then(res => {resolve(res.data.image)}).catch(fail => resolve(null));
   });
 };
 
-const getDayOfCountry = () => {
+const getDayOffCountry = (countryCode ) => {
   return new Promise(resolve => {
-    axios.get('https://date.nager.at/api/v2/publicholidays/2019/FR').then(res => {resolve(res.data)});
+    axios.get('https://date.nager.at/api/v2/publicholidays/2021/'+countryCode).then(res => {resolve(res.data)}).catch(fail => resolve(null));
   });
 };
 
 const getAll = () => {
-  let promises = Promise.all([getCatFacts(),getFoxDay(),getDayOfCountry()]);
-  console.log([promises[1]]);
-  let data = promises
-  return data;
+  return Promise.all([getCatFacts(),getFoxDay(),getDayOffCountry('FR')]).then(res => {
+    let data = {};
+    data['foxPicture'] = res[1];
+    data['catFacts'] = res[0];
+    data['holidays'] = res[2];
+    return data;
+  });
 };
 
 
